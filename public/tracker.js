@@ -12,50 +12,66 @@
      DEVICE NAME from User-Agent
   ───────────────────────────────────────────── */
   function parseDeviceName(ua, w, h, ratio) {
-    // iPhone — detect by screen resolution (most accurate from UA alone)
     let m;
     if ((m = ua.match(/iPhone OS ([\d_]+)/))) {
-      const ios = m[1].replace(/_/g,".");
-      // Use logical resolution (physical / pixelRatio) to identify model
-      const pw = Math.round((w||0) * (ratio||1));
-      const ph = Math.round((h||0) * (ratio||1));
-      const res = pw + "x" + ph;
-      // physical pixel map → model(s)
-      const resMap = {
-        "1170x2532": "iPhone 12 / 13 / 14",
-        "1179x2556": "iPhone 15 / 16",
-        "1290x2796": "iPhone 15 Plus / 16 Plus",
-        "1242x2688": "iPhone 11 Pro Max / XS Max",
-        "828x1792":  "iPhone 11 / XR",
-        "1125x2436": "iPhone X / XS / 11 Pro",
-        "1080x1920": "iPhone 8 Plus / 7 Plus",
-        "750x1334":  "iPhone SE (2nd/3rd) / 8 / 7 / 6S",
-        "640x1136":  "iPhone SE (1st) / 5S",
-        "1284x2778": "iPhone 12 Pro Max / 13 Pro Max",
-        "1170x2532x3": "iPhone 12 Pro / 13 Pro / 14 Pro",
-        "1179x2556x3": "iPhone 15 Pro / 16 Pro",
-        "1320x2868": "iPhone 16 Pro Max",
-        "1206x2622": "iPhone 16 Pro",
+      const ios    = m[1].replace(/_/g, ".");
+      const iosMaj = parseInt(ios.split(".")[0]);
+      const r      = Math.round(ratio || 1);
+      const key    = w + "x" + h + "@" + r;
+
+      /*  key = logicalW x logicalH @ pixelRatio
+          Multiple models can share the same key — we narrow by iOS version when possible.
+          Format: [mostLikely, fallback]  */
+      const map = {
+        /* ── SE / small ── */
+        "320x568@2": "iPhone SE (1st gen) / 5S",
+        "375x667@2": iosMaj >= 15 ? "iPhone SE (3rd gen) / 8 / 7"
+                   : iosMaj >= 13 ? "iPhone SE (2nd gen) / 8 / 7"
+                   : "iPhone 8 / 7 / 6S / 6",
+
+        /* ── X family (375x812 @3) ── */
+        "375x812@3": iosMaj >= 15 ? "iPhone 13 mini / 12 mini"
+                   : iosMaj >= 14 ? "iPhone 12 mini / 11 Pro / XS"
+                   : "iPhone 11 Pro / XS / X",
+
+        /* ── iPhone 11 / XR (414x896 @2) ── */
+        "414x896@2": "iPhone 11 / XR",
+
+        /* ── XS Max / 11 Pro Max (414x896 @3) ── */
+        "414x896@3": iosMaj >= 14 ? "iPhone 11 Pro Max"
+                   : "iPhone XS Max / 11 Pro Max",
+
+        /* ── Plus old (414x736 @3) ── */
+        "414x736@3": "iPhone 8 Plus / 7 Plus / 6S Plus",
+
+        /* ── iPhone 12/13/14 standard (390x844 @3) ── */
+        "390x844@3": iosMaj >= 16 ? "iPhone 14 / 13 / 12"
+                   : iosMaj >= 15 ? "iPhone 13 / 12"
+                   : "iPhone 12",
+
+        /* ── Pro 12/13/14 share same logical size as standard — can't distinguish ── */
+
+        /* ── 12 PM / 13 PM / 14 Plus (428x926 @3) ── */
+        "428x926@3": iosMaj >= 16 ? "iPhone 14 Plus / 13 Pro Max"
+                   : iosMaj >= 15 ? "iPhone 13 Pro Max / 12 Pro Max"
+                   : "iPhone 12 Pro Max",
+
+        /* ── iPhone 15 / 15 Pro / 16 (393x852 @3) ── */
+        "393x852@3": iosMaj >= 18 ? "iPhone 16 / 15 Pro / 15"
+                   : "iPhone 15 Pro / 15",
+
+        /* ── iPhone 15 Plus / 16 Plus (430x932 @3) ── */
+        "430x932@3": iosMaj >= 18 ? "iPhone 16 Plus / 15 Plus"
+                   : "iPhone 15 Plus",
+
+        /* ── iPhone 16 Pro (402x874 @3) ── */
+        "402x874@3": "iPhone 16 Pro",
+
+        /* ── iPhone 16 Pro Max (440x956 @3) ── */
+        "440x956@3": "iPhone 16 Pro Max",
       };
-      // also try logical resolution
-      const logMap = {
-        "414x896":  "iPhone 11 / XR",
-        "390x844":  "iPhone 12 / 13 / 14",
-        "393x852":  "iPhone 15 / 16",
-        "430x932":  "iPhone 15 Plus / 16 Plus",
-        "375x812":  "iPhone X / XS / 11 Pro",
-        "375x667":  "iPhone SE (2nd) / 8 / 7 / 6S",
-        "320x568":  "iPhone SE (1st) / 5S",
-        "414x736":  "iPhone 8 Plus / 7 Plus",
-        "428x926":  "iPhone 12 Pro Max / 13 Pro Max",
-        "430x932":  "iPhone 14 Plus / 15 Plus",
-        "402x874":  "iPhone 16 Pro",
-        "440x956":  "iPhone 16 Pro Max",
-      };
-      const logical = (w||0) + "x" + (h||0);
-      const byLogical = logMap[logical];
-      const byPhysical = resMap[res];
-      const model = byLogical || byPhysical || "iPhone";
+
+      const model = map[key] || ("iPhone (iOS " + ios + ", " + w + "x" + h + ")");
       return "Apple " + model + " (iOS " + ios + ")";
     }
     // iPad
