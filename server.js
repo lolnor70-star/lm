@@ -1,6 +1,7 @@
 const express        = require("express");
 const fs             = require("fs");
 const path           = require("path");
+const https          = require("https");
 const DeviceDetector = require("device-detector-js");
 
 const app      = express();
@@ -68,6 +69,37 @@ function enrichDevice(session) {
   return session;
 }
 
+// ── server-side IP geolocation (no CORS issues) ──
+function fetchGeo(ip, cb) {
+  // strip port / IPv6 prefix
+  const clean = (ip || "").replace(/^::ffff:/, "").split(",")[0].trim();
+  if (!clean || clean === "::1" || clean.startsWith("127.") || clean.startsWith("192.168.") || clean.startsWith("10.")) {
+    return cb(null); // local/private — skip
+  }
+  const url = "https://ipinfo.io/" + clean + "/json";
+  https.get(url, r => {
+    let d = "";
+    r.on("data", c => d += c);
+    r.on("end", () => {
+      try { cb(JSON.parse(d)); } catch { cb(null); }
+    });
+  }).on("error", () => {
+    // fallback: ip-api.com (server-side HTTP is fine)
+    const http2 = require("http");
+    http2.get("http://ip-api.com/json/" + clean + "?fields=status,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,query", r2 => {
+      let d2 = "";
+      r2.on("data", c => d2 += c);
+      r2.on("end", () => {
+        try {
+          const j = JSON.parse(d2);
+          if (j.status === "success") cb({ ip: j.query, city: j.city, region: j.regionName, country: j.countryCode, countryName: j.country, org: j.isp, timezone: j.timezone, loc: j.lat + "," + j.lon, postal: j.zip, isp: j.isp, asn: j.as, source: "ip-api" });
+          else cb(null);
+        } catch { cb(null); }
+      });
+    }).on("error", () => cb(null));
+  });
+}
+
 // ── helpers ──
 function readLogs() {
   try { return JSON.parse(fs.readFileSync(LOGS_FILE, "utf8")); }
@@ -79,19 +111,48 @@ function writeLogs(data) {
 
 // ── POST /api/log ──
 app.post("/api/log", (req, res) => {
+  const rawIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "";
   let session = {
     ...req.body,
-    serverIp:   req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+    serverIp:   rawIp,
     serverTime: new Date().toISOString(),
   };
 
   session = enrichDevice(session);
 
+  // save immediately so client doesn't wait on geo fetch
   const logs = readLogs();
   const idx  = logs.findIndex(l => l.sessionId === session.sessionId);
   if (idx >= 0) logs[idx] = session; else logs.unshift(session);
   writeLogs(logs.slice(0, 500));
   res.json({ ok: true });
+
+  // enrich geo server-side async — if geoIP fields missing or city is null
+  const geo = session.geoIP || {};
+  if (!geo.city) {
+    const ip = rawIp.split(",")[0].trim();
+    fetchGeo(ip, d => {
+      if (!d) return;
+      const logs2 = readLogs();
+      const i2 = logs2.findIndex(l => l.sessionId === session.sessionId);
+      if (i2 < 0) return;
+      logs2[i2].geoIP = {
+        ip:          d.ip || ip,
+        city:        d.city        || null,
+        region:      d.region      || null,
+        country:     d.country     || null,
+        countryName: d.countryName || null,
+        org:         d.org         || null,
+        isp:         d.isp         || null,
+        asn:         d.asn         || null,
+        timezone:    d.timezone    || null,
+        loc:         d.loc         || null,
+        postal:      d.postal      || null,
+        source:      d.source      || "ipinfo",
+      };
+      writeLogs(logs2.slice(0, 500));
+    });
+  }
 });
 
 // ── GET /api/logs ──

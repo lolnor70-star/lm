@@ -393,9 +393,9 @@
     push();
   });
 
-  // ── IP geolocation — try 3 services in order ──
+  // ── IP geolocation — client-side (server also enriches server-side as backup) ──
   function resolveIP() {
-    // Service 1: ipinfo.io
+    // Service 1: ipinfo.io (HTTPS, free)
     fetch("https://ipinfo.io/json")
       .then(r => r.json())
       .then(d => {
@@ -409,25 +409,25 @@
         logEvent("ip_resolved", session.geoIP);
       })
       .catch(() => {
-        // Service 2: ip-api.com (has ISP, lat/lon, AS number)
-        fetch("http://ip-api.com/json?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query")
+        // Service 2: ipapi.co (HTTPS, free, no mixed-content issue)
+        fetch("https://ipapi.co/json/")
           .then(r => r.json())
           .then(d => {
-            if (d.status === "success") {
+            if (d.ip) {
               Object.assign(session.geoIP, {
-                ip: d.query, city: d.city, country: d.countryCode,
-                countryName: d.country, region: d.regionName,
-                org: d.org || d.isp, timezone: d.timezone,
-                loc: d.lat + "," + d.lon,
-                postal: d.zip || null,
-                isp: d.isp, asn: d.as,
-                source: "ip-api",
+                ip: d.ip, city: d.city, country: d.country_code,
+                countryName: d.country_name, region: d.region,
+                org: d.org, timezone: d.timezone,
+                loc: d.latitude + "," + d.longitude,
+                postal: d.postal || null,
+                isp: d.org, asn: d.asn,
+                source: "ipapi.co",
               });
               logEvent("ip_resolved", session.geoIP);
             }
           })
           .catch(() => {
-            // Service 3: cloudflare trace (minimal but reliable)
+            // Service 3: Cloudflare trace (HTTPS, minimal fallback)
             fetch("https://cloudflare.com/cdn-cgi/trace")
               .then(r => r.text())
               .then(t => {
