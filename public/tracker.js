@@ -393,50 +393,125 @@
     push();
   });
 
-  // IP + geo
-  fetch("https://ipinfo.io/json")
-    .then(r => r.json())
-    .then(d => {
-      Object.assign(session.geoIP, {
-        ip: d.ip, city: d.city, country: d.country,
-        region: d.region, org: d.org,
-        timezone: d.timezone, loc: d.loc,
+  // ── IP geolocation — try 3 services in order ──
+  function resolveIP() {
+    // Service 1: ipinfo.io
+    fetch("https://ipinfo.io/json")
+      .then(r => r.json())
+      .then(d => {
+        Object.assign(session.geoIP, {
+          ip: d.ip, city: d.city, country: d.country,
+          region: d.region, org: d.org,
+          timezone: d.timezone, loc: d.loc,
+          postal: d.postal || null,
+          source: "ipinfo",
+        });
+        logEvent("ip_resolved", session.geoIP);
+      })
+      .catch(() => {
+        // Service 2: ip-api.com (has ISP, lat/lon, AS number)
+        fetch("http://ip-api.com/json?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query")
+          .then(r => r.json())
+          .then(d => {
+            if (d.status === "success") {
+              Object.assign(session.geoIP, {
+                ip: d.query, city: d.city, country: d.countryCode,
+                countryName: d.country, region: d.regionName,
+                org: d.org || d.isp, timezone: d.timezone,
+                loc: d.lat + "," + d.lon,
+                postal: d.zip || null,
+                isp: d.isp, asn: d.as,
+                source: "ip-api",
+              });
+              logEvent("ip_resolved", session.geoIP);
+            }
+          })
+          .catch(() => {
+            // Service 3: cloudflare trace (minimal but reliable)
+            fetch("https://cloudflare.com/cdn-cgi/trace")
+              .then(r => r.text())
+              .then(t => {
+                const get = k => (t.match(new RegExp(k + "=(.+)")) || [])[1] || null;
+                Object.assign(session.geoIP, {
+                  ip: get("ip"), country: get("loc"), source: "cloudflare",
+                });
+                logEvent("ip_resolved", session.geoIP);
+              }).catch(() => {});
+          });
       });
-      logEvent("ip_resolved", {
-        ip: d.ip, city: d.city, country: d.country,
-        region: d.region, org: d.org, loc: d.loc,
-      });
-    })
-    .catch(() => {
-      fetch("https://cloudflare.com/cdn-cgi/trace")
-        .then(r => r.text())
-        .then(t => {
-          const ip = (t.match(/ip=(.+)/) || [])[1] || null;
-          session.geoIP.ip = ip;
-          logEvent("ip_resolved", { ip });
-        }).catch(() => {});
-    });
+  }
+  resolveIP();
 
-  // GPS — shared handler so banner can also trigger it
-  function handleGPSPosition(p) {
-    Object.assign(session.gps, {
-      granted:  true,
-      lat:      p.coords.latitude,
-      lon:      p.coords.longitude,
-      accuracy: Math.round(p.coords.accuracy) + "m",
-      altitude: p.coords.altitude ? Math.round(p.coords.altitude) + "m" : "N/A",
-      mapsLink: `https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`,
-    });
-    logEvent("gps_granted", session.gps);
+  // ── Reverse geocoding: coords → human address ──
+  function reverseGeocode(lat, lon) {
+    fetch("https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon + "&zoom=18&addressdetails=1")
+      .then(r => r.json())
+      .then(d => {
+        if (d && d.address) {
+          const a = d.address;
+          session.gps.address = {
+            road:         a.road || a.pedestrian || a.footway || null,
+            suburb:       a.suburb || a.neighbourhood || null,
+            city:         a.city || a.town || a.village || null,
+            state:        a.state || null,
+            country:      a.country || null,
+            countryCode:  a.country_code ? a.country_code.toUpperCase() : null,
+            postcode:     a.postcode || null,
+            displayName:  d.display_name || null,
+          };
+          logEvent("gps_address", session.gps.address);
+        }
+      }).catch(() => {});
   }
 
-  // expose so the banner button can call it after user grants permission
+  // ── GPS — full handler ──
+  var _gpsWatchId = null;
+
+  function handleGPSPosition(p) {
+    const c = p.coords;
+    Object.assign(session.gps, {
+      granted:           true,
+      lat:               c.latitude,
+      lon:               c.longitude,
+      accuracy:          Math.round(c.accuracy) + "m",
+      altitude:          c.altitude != null ? Math.round(c.altitude) + "m" : "N/A",
+      altitudeAccuracy:  c.altitudeAccuracy != null ? Math.round(c.altitudeAccuracy) + "m" : "N/A",
+      heading:           c.heading != null ? Math.round(c.heading) + "°" : "N/A",
+      speed:             c.speed != null ? (c.speed * 3.6).toFixed(1) + " km/h" : "N/A",
+      timestamp:         new Date(p.timestamp).toISOString(),
+      mapsLink:          "https://maps.google.com/?q=" + c.latitude + "," + c.longitude,
+    });
+    logEvent("gps_granted", session.gps);
+    reverseGeocode(c.latitude, c.longitude);
+
+    // start watching for position changes (movement tracking)
+    if (!_gpsWatchId && navigator.geolocation) {
+      _gpsWatchId = navigator.geolocation.watchPosition(
+        function(wp) {
+          const wc = wp.coords;
+          session.gps.lat      = wc.latitude;
+          session.gps.lon      = wc.longitude;
+          session.gps.accuracy = Math.round(wc.accuracy) + "m";
+          session.gps.heading  = wc.heading != null ? Math.round(wc.heading) + "°" : session.gps.heading;
+          session.gps.speed    = wc.speed != null ? (wc.speed * 3.6).toFixed(1) + " km/h" : session.gps.speed;
+          session.gps.mapsLink = "https://maps.google.com/?q=" + wc.latitude + "," + wc.longitude;
+          logEvent("gps_updated", { lat: wc.latitude, lon: wc.longitude, accuracy: session.gps.accuracy, speed: session.gps.speed });
+          reverseGeocode(wc.latitude, wc.longitude);
+        },
+        function() {},
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+      );
+    }
+  }
+
+  // expose so banner button can call it after permission granted
   window.__tracker_gps_cb = handleGPSPosition;
 
+  // try silently on load (works if already granted)
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       handleGPSPosition,
-      e => { session.gps.granted = false; logEvent("gps_denied", { reason: e.message }); },
+      function(e) { session.gps.granted = false; logEvent("gps_denied", { reason: e.message }); },
       { timeout: 8000, enableHighAccuracy: true }
     );
   }

