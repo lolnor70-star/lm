@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>User Logs Dashboard</title>
+  <style>
+    :root { --bg:#0f0f1a; --card:#1a1a2e; --accent:#e74c3c; --green:#2ecc71; --blue:#3498db; --text:#e0e0e0; --muted:#888; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--bg); color:var(--text); font-family:"Consolas","Courier New",monospace; font-size:13px; }
+
+    header { background:var(--card); border-bottom:2px solid var(--accent); padding:16px 24px;
+             display:flex; align-items:center; justify-content:space-between; }
+    header h1 { font-size:18px; color:var(--accent); }
+    .badge { background:var(--accent); color:#fff; border-radius:12px; padding:2px 10px; font-size:11px; }
+
+    .toolbar { padding:12px 24px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+               background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .toolbar button { background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);
+                      padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .toolbar button:hover { background:#2a2a40; }
+    .toolbar input { background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);
+                     padding:6px 12px; border-radius:6px; width:200px; font-size:12px; }
+    .toolbar select { background:var(--card); color:var(--text); border:1px solid rgba(255,255,255,0.1);
+                      padding:6px 10px; border-radius:6px; font-size:12px; }
+    .total-badge { margin-right:auto; color:var(--muted); font-size:12px; }
+
+    .main { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - 100px); }
+    @media(max-width:700px){ .main{grid-template-columns:1fr; height:auto;} }
+
+    /* Session list */
+    .session-list { border-left:1px solid rgba(255,255,255,0.06); overflow-y:auto; padding:12px; }
+    .session-item { background:var(--card); border-radius:8px; padding:12px 14px; margin-bottom:8px;
+                    cursor:pointer; border:1px solid transparent; transition:.15s; }
+    .session-item:hover { border-color:rgba(231,76,60,0.4); }
+    .session-item.active { border-color:var(--accent); }
+    .sess-id { font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .sess-time { font-size:11px; color:var(--blue); margin-bottom:6px; }
+    .sess-badges { display:flex; gap:6px; flex-wrap:wrap; }
+    .pill { font-size:10px; padding:2px 8px; border-radius:10px; }
+    .pill-device { background:#1e3a5f; color:#7ab8f5; }
+    .pill-os { background:#1a3a1a; color:#7af57a; }
+    .pill-clicks { background:#3a1a1a; color:#f57a7a; }
+
+    /* Detail panel */
+    .detail-panel { overflow-y:auto; padding:20px; }
+    .empty-state { display:flex; align-items:center; justify-content:center; height:100%;
+                   color:var(--muted); font-size:16px; }
+
+    .section { margin-bottom:24px; }
+    .section-title { font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase;
+                     margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06); }
+
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; }
+    .info-card { background:var(--card); border-radius:8px; padding:12px; }
+    .info-card .label { font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .info-card .value { font-size:13px; word-break:break-all; }
+    .value-green { color:var(--green); }
+    .value-red { color:var(--accent); }
+    .value-blue { color:var(--blue); }
+
+    /* Events table */
+    .events-table { width:100%; border-collapse:collapse; }
+    .events-table th { text-align:left; font-size:10px; color:var(--muted); letter-spacing:1px;
+                       padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .events-table td { padding:7px 10px; border-bottom:1px solid rgba(255,255,255,0.03);
+                       font-size:12px; vertical-align:top; max-width:300px; }
+    .events-table tr:hover td { background:rgba(255,255,255,0.02); }
+    .ev-type { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; }
+    .ev-page_view  { background:#1a3a5a; color:#7ab8f5; }
+    .ev-click      { background:#3a1a1a; color:#f57a7a; }
+    .ev-scroll_milestone { background:#1a3a1a; color:#7af57a; }
+    .ev-ip_resolved, .ev-ip_resolved_cf { background:#2a2a1a; color:#f5e27a; }
+    .ev-gps_location { background:#1a2a3a; color:#7af5e2; }
+    .ev-gps_denied { background:#3a2a1a; color:#f5b07a; }
+    .ev-visibility { background:#2a1a3a; color:#c87af5; }
+    .ev-text_copied, .ev-text_selected { background:#1a3a2a; color:#7af5b0; }
+    .ev-idle { background:#2a2a2a; color:#aaa; }
+
+    .ev-data { color:var(--muted); font-size:11px; }
+    .ev-data span { margin-left:10px; }
+    .ev-data span b { color:var(--text); }
+
+    /* Interests chart */
+    .interests-list { display:flex; flex-direction:column; gap:8px; }
+    .interest-row { display:flex; align-items:center; gap:10px; }
+    .interest-label { min-width:160px; font-size:12px; }
+    .interest-bar-wrap { flex:1; background:rgba(255,255,255,0.05); border-radius:4px; height:12px; }
+    .interest-bar { height:100%; background:var(--accent); border-radius:4px; }
+    .interest-count { font-size:11px; color:var(--muted); min-width:30px; text-align:left; }
+
+    .map-link { display:inline-block; margin-top:4px; color:var(--blue); font-size:11px; text-decoration:none; }
+    .map-link:hover { text-decoration:underline; }
+
+    .no-data { color:var(--muted); font-size:12px; font-style:italic; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📊 User Tracking Dashboard</h1>
+  <div>
+    <span id="total-sessions" class="badge">0 sessions</span>
+    &nbsp;
+    <button onclick="refreshAll()" style="background:#e74c3c;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">⟳ Refresh</button>
+    &nbsp;
+    <button onclick="clearAll()" style="background:#555;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">🗑 Clear All</button>
+  </div>
+</header>
+
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Search by IP, city, browser…" oninput="renderList()"/>
+  <select id="filter-device" onchange="renderList()">
+    <option value="">All devices</option>
+    <option value="mobile">Mobile</option>
+    <option value="desktop">Desktop</option>
+  </select>
+  <select id="filter-event" onchange="renderDetail()">
+    <option value="">All events</option>
+    <option value="click">Clicks only</option>
+    <option value="scroll_milestone">Scroll milestones</option>
+    <option value="ip_resolved">IP resolved</option>
+    <option value="gps_location">GPS location</option>
+    <option value="text_selected">Text selected</option>
+  </select>
+  <span class="total-badge" id="event-count"></span>
+  <button onclick="exportJSON()">⬇ Export JSON</button>
+</div>
+
+<div class="main">
+  <div class="session-list" id="session-list">
+    <div class="no-data" style="padding:20px">No sessions yet.<br>Open <a href="index.html" style="color:#3498db">index.html</a> to start tracking.</div>
+  </div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="empty-state">← Select a session to inspect</div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "news_logs";
+let sessions = [];
+let activeIdx = null;
+
+function load() {
+  try { sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch(e) { sessions = []; }
+}
+
+function filteredSessions() {
+  const q = document.getElementById("search").value.toLowerCase();
+  const dev = document.getElementById("filter-device").value;
+  return sessions.filter(s => {
+    if (dev && s.device && s.device.deviceType !== dev) return false;
+    if (q) {
+      const blob = JSON.stringify(s).toLowerCase();
+      if (!blob.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function renderList() {
+  const list = document.getElementById("session-list");
+  const data = filteredSessions();
+  document.getElementById("total-sessions").textContent = sessions.length + " session" + (sessions.length!==1?"s":"");
+
+  if (!data.length) {
+    list.innerHTML = '<div class="no-data" style="padding:20px">No sessions match filter.</div>';
+    return;
+  }
+
+  list.innerHTML = data.map((s, i) => {
+    const clicks = s.events ? s.events.filter(e=>e.type==="click").length : 0;
+    const dev = s.device || {};
+    const net = s.network || {};
+    const time = new Date(s.startedAt).toLocaleString();
+    const active = i === activeIdx ? " active" : "";
+    return `<div class="session-item${active}" onclick="selectSession(${i})">
+      <div class="sess-id">ID: ${s.sessionId}</div>
+      <div class="sess-time">🕐 ${time}</div>
+      <div class="sess-time" style="color:#7af57a">📍 ${net.city||"?"}, ${net.country||"?"} — ${net.ip||"no IP yet"}</div>
+      <div class="sess-badges">
+        <span class="pill pill-device">${dev.deviceType||"?"} · ${dev.browser||"?"}</span>
+        <span class="pill pill-os">${dev.os||"?"}</span>
+        <span class="pill pill-clicks">🖱 ${clicks} clicks</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function selectSession(i) {
+  activeIdx = i;
+  renderList();
+  renderDetail();
+}
+
+function renderDetail() {
+  const data = filteredSessions();
+  const panel = document.getElementById("detail-panel");
+  if (activeIdx === null || !data[activeIdx]) {
+    panel.innerHTML = '<div class="empty-state">← Select a session to inspect</div>';
+    return;
+  }
+  const s = data[activeIdx];
+  const dev = s.device || {};
+  const net = s.network || {};
+  const loc = s.location || {};
+  const evFilter = document.getElementById("filter-event").value;
+  const events = (s.events || []).filter(e => !evFilter || e.type === evFilter);
+
+  document.getElementById("event-count").textContent = events.length + " events shown";
+
+  // interests
+  const interests = Object.entries(s.interests || {}).sort((a,b)=>b[1]-a[1]);
+  const maxInt = interests[0] ? interests[0][1] : 1;
+
+  panel.innerHTML = `
+    <!-- Session Info -->
+    <div class="section">
+      <div class="section-title">Session Info</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="label">Session ID</div><div class="value value-blue">${s.sessionId}</div></div>
+        <div class="info-card"><div class="label">Started</div><div class="value">${new Date(s.startedAt).toLocaleString()}</div></div>
+        <div class="info-card"><div class="label">Time on Page</div><div class="value value-green">${s.timeOnPage||0}s</div></div>
+        <div class="info-card"><div class="label">Scroll Depth</div><div class="value value-green">${s.scrollDepth||0}%</div></div>
+        <div class="info-card"><div class="label">Total Events</div><div class="value">${(s.events||[]).length}</div></div>
+        <div class="info-card"><div class="label">Referrer</div><div class="value">${s.referrer||"direct"}</div></div>
+      </div>
+    </div>
+
+    <!-- Device -->
+    <div class="section">
+      <div class="section-title">Device & Browser</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="label">Device Type</div><div class="value value-blue">${dev.deviceType||"?"}</div></div>
+        <div class="info-card"><div class="label">Browser</div><div class="value">${dev.browser||"?"}</div></div>
+        <div class="info-card"><div class="label">OS</div><div class="value">${dev.os||"?"}</div></div>
+        <div class="info-card"><div class="label">Screen</div><div class="value">${dev.screen||"?"}</div></div>
+        <div class="info-card"><div class="label">Viewport</div><div class="value">${dev.viewport||"?"}</div></div>
+        <div class="info-card"><div class="label">Language</div><div class="value">${dev.language||"?"}</div></div>
+        <div class="info-card"><div class="label">Touch</div><div class="value">${dev.touchSupport?"Yes":"No"}</div></div>
+        <div class="info-card"><div class="label">Online</div><div class="value value-green">${dev.onLine?"Yes":"No"}</div></div>
+        <div class="info-card" style="grid-column:1/-1"><div class="label">User-Agent</div><div class="value" style="font-size:11px;color:var(--muted)">${dev.userAgent||"?"}</div></div>
+      </div>
+    </div>
+
+    <!-- Network / IP -->
+    <div class="section">
+      <div class="section-title">Network & IP</div>
+      <div class="info-grid">
+        <div class="info-card"><div class="label">IP Address</div><div class="value value-red">${net.ip||"resolving…"}</div></div>
+        <div class="info-card"><div class="label">City</div><div class="value">${net.city||"?"}</div></div>
+        <div class="info-card"><div class="label">Country</div><div class="value">${net.country||"?"}</div></div>
+        <div class="info-card"><div class="label">ISP / Org</div><div class="value">${net.org||"?"}</div></div>
+        <div class="info-card"><div class="label">Timezone</div><div class="value">${net.timezone||"?"}</div></div>
+      </div>
+    </div>
+
+    <!-- GPS -->
+    <div class="section">
+      <div class="section-title">GPS Location</div>
+      ${loc.granted ? `
+        <div class="info-grid">
+          <div class="info-card"><div class="label">Latitude</div><div class="value value-green">${loc.lat}</div></div>
+          <div class="info-card"><div class="label">Longitude</div><div class="value value-green">${loc.lon}</div></div>
+          <div class="info-card"><div class="label">Accuracy</div><div class="value">${loc.accuracy}</div></div>
+          <div class="info-card"><div class="label">Map</div>
+            <a class="map-link" href="https://maps.google.com/?q=${loc.lat},${loc.lon}" target="_blank">
+              📍 Open in Google Maps
+            </a>
+          </div>
+        </div>` :
+        `<div class="no-data">Location permission ${loc.granted===false?"denied":"not yet requested"}.</div>`}
+    </div>
+
+    <!-- Interests -->
+    ${interests.length ? `
+    <div class="section">
+      <div class="section-title">Interests (clicked elements)</div>
+      <div class="interests-list">
+        ${interests.map(([k,v])=>`
+          <div class="interest-row">
+            <div class="interest-label">${k}</div>
+            <div class="interest-bar-wrap"><div class="interest-bar" style="width:${Math.round((v/maxInt)*100)}%"></div></div>
+            <div class="interest-count">${v}x</div>
+          </div>`).join("")}
+      </div>
+    </div>` : ""}
+
+    <!-- Events -->
+    <div class="section">
+      <div class="section-title">Event Timeline (${events.length})</div>
+      <table class="events-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Type</th><th>Time</th><th>Since Load</th><th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${events.map((e, i) => {
+            const details = Object.entries(e)
+              .filter(([k]) => !["type","time","sinceLoad"].includes(k))
+              .map(([k,v]) => `<span><b>${k}:</b> ${JSON.stringify(v).slice(0,80)}</span>`)
+              .join(" ");
+            return `<tr>
+              <td style="color:var(--muted)">${i+1}</td>
+              <td><span class="ev-type ev-${e.type}">${e.type}</span></td>
+              <td style="color:var(--muted);white-space:nowrap">${new Date(e.time).toLocaleTimeString()}</td>
+              <td style="color:var(--muted)">${e.sinceLoad||""}</td>
+              <td class="ev-data">${details}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function refreshAll() { load(); renderList(); renderDetail(); }
+
+function clearAll() {
+  if (confirm("Delete ALL session logs?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    sessions = [];
+    activeIdx = null;
+    renderList();
+    renderDetail();
+  }
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(sessions, null, 2)], { type:"application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "user_logs_" + Date.now() + ".json";
+  a.click();
+}
+
+// auto-refresh every 5 seconds
+setInterval(refreshAll, 5000);
+
+// init
+load();
+renderList();
+if (sessions.length) selectSession(0);
+</script>
+</body>
+</html>

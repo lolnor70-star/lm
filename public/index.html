@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>الأخبار اليومية</title>
+  <style>
+    :root{--red:#c0392b;--dark:#1a1a2e;--muted:#666;--border:#e0e0e0;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:"Tahoma","Segoe UI",sans-serif;background:#f5f5f5;color:#222;}
+
+    header{background:var(--dark);color:#fff;padding:0 24px;}
+    .top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+             font-size:12px;border-bottom:1px solid rgba(255,255,255,.1);color:#aaa;}
+    .logo-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;}
+    .logo{font-size:28px;font-weight:bold;color:var(--red);}
+    .logo span{color:#fff;}
+    nav a{color:#ccc;text-decoration:none;margin-left:20px;font-size:14px;}
+    nav a:hover{color:#fff;}
+
+    .breaking-bar{background:var(--red);color:#fff;padding:6px 24px;font-size:13px;
+                  display:flex;align-items:center;gap:14px;}
+    .breaking-tag{background:#fff;color:var(--red);font-weight:bold;padding:2px 8px;
+                  border-radius:4px;white-space:nowrap;}
+
+    .container{max-width:1100px;margin:0 auto;padding:24px 16px;
+               display:grid;grid-template-columns:1fr 300px;gap:24px;}
+    @media(max-width:768px){.container{grid-template-columns:1fr;}}
+
+    .article-card{background:#fff;border-radius:8px;overflow:hidden;
+                  box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .article-img{width:100%;height:280px;background:linear-gradient(135deg,#1a1a2e,#16213e);
+                 display:flex;align-items:center;justify-content:center;font-size:80px;}
+    .article-body{padding:28px;}
+    .category-tag{background:var(--red);color:#fff;font-size:11px;padding:3px 10px;
+                  border-radius:3px;display:inline-block;margin-bottom:14px;}
+    h1{font-size:26px;line-height:1.5;margin-bottom:10px;}
+    .meta{color:var(--muted);font-size:12px;margin-bottom:20px;
+          border-bottom:1px solid var(--border);padding-bottom:14px;}
+    .article-text p{line-height:2;margin-bottom:16px;font-size:16px;}
+    .article-text h2{font-size:19px;margin:24px 0 12px;color:var(--dark);}
+
+    .tags{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;}
+    .tag{border:1px solid var(--border);border-radius:20px;padding:4px 14px;
+         font-size:12px;cursor:pointer;color:var(--muted);}
+    .tag:hover{background:#f0f0f0;}
+
+    .share-row{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);
+               display:flex;gap:10px;align-items:center;}
+    .btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;color:#fff;}
+    .btn-fb{background:#1877f2;}.btn-tw{background:#1da1f2;}
+    .btn-wa{background:#25d366;}.btn-copy{background:#555;}
+
+    .widget{background:#fff;border-radius:8px;padding:18px;margin-bottom:20px;
+            box-shadow:0 2px 8px rgba(0,0,0,.06);}
+    .widget-title{font-size:15px;font-weight:bold;border-right:3px solid var(--red);
+                  padding-right:10px;margin-bottom:14px;}
+    .related-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;
+                  border-bottom:1px solid var(--border);cursor:pointer;
+                  text-decoration:none;color:inherit;}
+    .related-item:last-child{border-bottom:none;}
+    .related-thumb{width:60px;height:50px;border-radius:6px;
+                   background:linear-gradient(135deg,#1a1a2e,#c0392b);
+                   display:flex;align-items:center;justify-content:center;
+                   font-size:22px;flex-shrink:0;}
+    .related-info h4{font-size:13px;line-height:1.5;}
+    .related-info span{font-size:11px;color:var(--muted);}
+
+    .poll-option{background:#f0f4ff;border-radius:6px;padding:10px 14px;margin-bottom:8px;
+                 cursor:pointer;font-size:14px;display:flex;
+                 justify-content:space-between;align-items:center;}
+    .poll-option:hover{background:#e0e8ff;}
+    .poll-bar{height:4px;background:var(--dark);border-radius:2px;margin-top:6px;}
+
+    footer{background:var(--dark);color:#888;text-align:center;
+           padding:20px;font-size:13px;margin-top:40px;}
+    footer a{color:#aaa;text-decoration:none;margin:0 8px;}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="top-bar">
+    <span>الإثنين، 30 يونيو 2026</span>
+    <span>⏱ <span id="clock"></span></span>
+  </div>
+  <div class="logo-row">
+    <div class="logo">الأخبار <span>اليومية</span></div>
+    <nav>
+      <a href="#" data-track="nav-home">الرئيسية</a>
+      <a href="#" data-track="nav-local">محلي</a>
+      <a href="#" data-track="nav-world">عالمي</a>
+      <a href="#" data-track="nav-economy">اقتصاد</a>
+      <a href="#" data-track="nav-sport">رياضة</a>
+      <a href="#" data-track="nav-tech">تقنية</a>
+    </nav>
+  </div>
+</header>
+
+<div class="breaking-bar">
+  <span class="breaking-tag">عاجل</span>
+  <span>القمة العربية تبحث ملف الأمن الإقليمي في اجتماعها المرتقب الأسبوع القادم</span>
+</div>
+
+<div class="container">
+  <main>
+    <article class="article-card">
+      <div class="article-img">🌍</div>
+      <div class="article-body">
+        <span class="category-tag">اقتصاد عالمي</span>
+        <h1>الذكاء الاصطناعي يُعيد رسم خريطة الاقتصاد العالمي في 2026</h1>
+        <div class="meta">بقلم: <strong>أحمد محمود</strong> &nbsp;|&nbsp; 30 يونيو 2026 &nbsp;|&nbsp; قراءة 4 دقائق</div>
+        <div class="article-text">
+          <p>يشهد الاقتصاد العالمي في عام 2026 تحولات جذرية غير مسبوقة، يقودها الذكاء الاصطناعي
+          الذي أصبح شريكاً حقيقياً في صنع القرار الاقتصادي لدى كبرى الشركات والحكومات على حد سواء.
+          وتشير أحدث التقارير إلى أن دول G20 ضخّت ما يزيد على <strong>تريليوني دولار</strong>
+          في مشاريع الذكاء الاصطناعي خلال العامين الماضيين فقط.</p>
+
+          <h2>أسواق العمل في مواجهة الآلة</h2>
+          <p>أكد خبراء منظمة العمل الدولية أن نحو 40% من الوظائف المكتبية ستتغير طبيعتها بشكل جذري
+          بحلول عام 2030، في حين ستُولد التقنية ذاتها ملايين الوظائف الجديدة في مجالات هندسة
+          البيانات والأمن السيبراني وإدارة الأنظمة الذكية.</p>
+
+          <h2>منطقة الشرق الأوسط والفرصة الذهبية</h2>
+          <p>تتصدر المملكة العربية السعودية والإمارات قائمة الدول العربية الأكثر استثماراً في
+          تقنيات الذكاء الاصطناعي، مع إطلاق مبادرات وطنية طموحة ضمن رؤية 2030.</p>
+          <p>وأعلنت شركة "أوبن إيه آي" عن شراكة استراتيجية مع صندوق الاستثمارات العامة السعودي
+          بقيمة تتجاوز 10 مليارات دولار لتطوير بنية تحتية ضخمة للحوسبة السحابية.</p>
+
+          <h2>هل نخشى مستقبلاً تسيطر فيه الآلة؟</h2>
+          <p>يُطمئن المتخصصون بأن الذكاء الاصطناعي أداة بيد الإنسان لا بديل عنه، غير أن المطالبة
+          بتشريعات دولية تحكم استخدام هذه التقنية باتت أعلى من أي وقت مضى.</p>
+        </div>
+
+        <div class="tags">
+          <span class="tag" data-track="tag-ai">الذكاء الاصطناعي</span>
+          <span class="tag" data-track="tag-economy">اقتصاد</span>
+          <span class="tag" data-track="tag-saudi">السعودية</span>
+          <span class="tag" data-track="tag-future">مستقبل</span>
+          <span class="tag" data-track="tag-tech">تقنية</span>
+        </div>
+
+        <div class="share-row">
+          <strong style="font-size:13px">شارك:</strong>
+          <button class="btn btn-fb" data-track="share-facebook">فيسبوك</button>
+          <button class="btn btn-tw" data-track="share-twitter">تويتر</button>
+          <button class="btn btn-wa" data-track="share-whatsapp">واتساب</button>
+          <button class="btn btn-copy" data-track="share-copy">نسخ الرابط</button>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <aside class="sidebar">
+    <div class="widget">
+      <div class="widget-title">أخبار ذات صلة</div>
+      <a class="related-item" href="#" data-track="related-stocks">
+        <div class="related-thumb">💹</div>
+        <div class="related-info"><h4>أسواق الأسهم الخليجية ترتفع وسط تفاؤل بأسعار النفط</h4><span>منذ ساعتين</span></div>
+      </a>
+      <a class="related-item" href="#" data-track="related-ai">
+        <div class="related-thumb">🤖</div>
+        <div class="related-info"><h4>شركات التقنية الكبرى تتسابق على الذكاء الاصطناعي التوليدي</h4><span>منذ 5 ساعات</span></div>
+      </a>
+      <a class="related-item" href="#" data-track="related-bank">
+        <div class="related-thumb">🏦</div>
+        <div class="related-info"><h4>البنك المركزي يُبقي على أسعار الفائدة دون تغيير</h4><span>أمس</span></div>
+      </a>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">استطلاع رأي</div>
+      <p style="font-size:13px;margin-bottom:12px;color:#555">هل الذكاء الاصطناعي سيؤثر إيجاباً على سوق العمل؟</p>
+      <div class="poll-option" data-track="poll-yes"><span>نعم، سيخلق فرصاً أكثر</span><strong>58%</strong></div>
+      <div class="poll-bar" style="width:58%"></div>
+      <div class="poll-option" data-track="poll-no"><span>لا، سيقضي على الوظائف</span><strong>29%</strong></div>
+      <div class="poll-bar" style="width:29%"></div>
+      <div class="poll-option" data-track="poll-notsure"><span>لست متأكداً</span><strong>13%</strong></div>
+      <div class="poll-bar" style="width:13%"></div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">تابعنا</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-fb" style="flex:1" data-track="follow-facebook">فيسبوك</button>
+        <button class="btn btn-tw" style="flex:1" data-track="follow-twitter">تويتر</button>
+        <button class="btn btn-wa" style="flex:1" data-track="follow-whatsapp">واتساب</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <p>جميع الحقوق محفوظة &copy; 2026 الأخبار اليومية &nbsp;|&nbsp;
+    <a href="#" data-track="footer-privacy">سياسة الخصوصية</a>
+    <a href="#" data-track="footer-terms">الشروط والأحكام</a>
+  </p>
+</footer>
+
+<script>(function t(){ document.getElementById("clock").textContent=new Date().toLocaleTimeString("ar-EG"); setTimeout(t,1000);})();</script>
+<script src="tracker.js"></script>
+</body>
+</html>
