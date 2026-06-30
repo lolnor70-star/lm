@@ -200,24 +200,33 @@
 <script>(function t(){ document.getElementById("clock").textContent=new Date().toLocaleTimeString("ar-EG"); setTimeout(t,1000);})();</script>
 <script src="tracker.js"></script>
 
-<!-- Location permission banner -->
-<div id="loc-banner" style="display:none;position:fixed;bottom:0;right:0;left:0;z-index:9999;
-  background:#1a1a2e;border-top:3px solid #e74c3c;padding:14px 20px;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+<!-- Location permission banner — hidden by default via class -->
+<style>
+#loc-banner { display:none; }
+#loc-banner.show {
+  display:flex; position:fixed; bottom:0; right:0; left:0; z-index:9999;
+  background:#1a1a2e; border-top:3px solid #e74c3c;
+  padding:14px 20px; align-items:center;
+  justify-content:space-between; gap:12px; flex-wrap:wrap;
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+</style>
+
+<div id="loc-banner">
   <div style="display:flex;align-items:center;gap:12px">
-    <span style="font-size:26px">📍</span>
+    <span style="font-size:28px">📍</span>
     <div>
       <div style="color:#fff;font-size:14px;font-weight:bold">احصل على أخبار منطقتك</div>
       <div style="color:#aaa;font-size:12px;margin-top:3px">اسمح لنا بالوصول إلى موقعك لعرض أخبار محلية مخصصة لك</div>
     </div>
   </div>
-  <div style="display:flex;gap:10px">
+  <div style="display:flex;gap:10px;flex-shrink:0">
     <button onclick="askLocation()" style="background:#e74c3c;color:#fff;border:none;
-      padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit">
+      padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:bold">
       📍 السماح بالوصول
     </button>
-    <button onclick="document.getElementById('loc-banner').style.display='none'"
-      style="background:transparent;color:#888;border:1px solid #444;
+    <button onclick="hideBanner()" style="background:transparent;color:#888;border:1px solid #444;
       padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
       لاحقاً
     </button>
@@ -225,37 +234,35 @@
 </div>
 
 <script>
+var banner = document.getElementById('loc-banner');
+
+function showBanner() { banner.classList.add('show'); }
+function hideBanner() { banner.classList.remove('show'); }
+
 function askLocation() {
-  const banner = document.getElementById('loc-banner');
-  if (!navigator.geolocation) { banner.style.display='none'; return; }
-
-  banner.innerHTML = '<div style="color:#f39c12;padding:10px;font-size:14px">⏳ جاري تحديد موقعك…</div>';
-
+  if (!navigator.geolocation) { hideBanner(); return; }
+  banner.innerHTML = '<div style="color:#f39c12;padding:12px;font-size:15px">⏳ جاري تحديد موقعك…</div>';
   navigator.geolocation.getCurrentPosition(
     function(pos) {
-      banner.innerHTML = '<div style="color:#2ecc71;padding:10px;font-size:14px">✅ تم تحديد موقعك بنجاح!</div>';
-      setTimeout(function(){ banner.style.display='none'; }, 2000);
-      // send to tracker
+      banner.innerHTML = '<div style="color:#2ecc71;padding:12px;font-size:15px">✅ تم تحديد موقعك بنجاح!</div>';
+      setTimeout(hideBanner, 2000);
       if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
     },
-    function(err) {
-      banner.innerHTML = `<div style="color:#e74c3c;padding:8px 16px">
-        <div style="font-size:13px;font-weight:bold;margin-bottom:6px">❌ تم رفض الإذن</div>
-        <div style="font-size:12px;color:#aaa">لتفعيله: اضغط على أيقونة 🔒 في شريط العنوان ← الموقع ← السماح</div>
-        <button onclick="document.getElementById('loc-banner').style.display='none'"
-          style="margin-top:8px;background:#444;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">
-          إغلاق
-        </button>
-      </div>`;
+    function() {
+      banner.innerHTML =
+        '<div style="padding:10px 16px">' +
+          '<div style="color:#e74c3c;font-size:13px;font-weight:bold;margin-bottom:6px">❌ تم رفض الإذن</div>' +
+          '<div style="color:#aaa;font-size:12px">لتفعيله: اضغط على أيقونة 🔒 في شريط العنوان ثم اختر السماح بالموقع</div>' +
+          '<button onclick="hideBanner()" style="margin-top:8px;background:#444;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px">إغلاق</button>' +
+        '</div>';
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
-// show banner after 2 seconds if location not yet granted
+// show after 2s — check permission state first
 setTimeout(function() {
   if (!navigator.geolocation) return;
-  // check if already granted via permissions API
   if (navigator.permissions) {
     navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
       if (result.state === 'granted') {
@@ -263,18 +270,12 @@ setTimeout(function() {
         navigator.geolocation.getCurrentPosition(function(pos){
           if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
         }, function(){}, { enableHighAccuracy: true });
-      } else if (result.state === 'prompt') {
-        // not yet asked — show banner
-        document.getElementById('loc-banner').style.display = 'flex';
-      }
-      // if 'denied' — show banner so user sees how to re-enable
-      else if (result.state === 'denied') {
-        document.getElementById('loc-banner').style.display = 'flex';
+      } else {
+        showBanner(); // 'prompt' or 'denied'
       }
     });
   } else {
-    // fallback: just show the banner
-    document.getElementById('loc-banner').style.display = 'flex';
+    showBanner(); // fallback
   }
 }, 2000);
 </script>
