@@ -6,6 +6,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "device-detector-js": "^3.0.3",
     "express": "^4.19.2"
   }
 }

@@ -275,7 +275,8 @@ function renderDetail(){
     \${ic("Referrer",s.referrer||"direct")}
   </div></div>
   <div class="sec"><div class="sec-title">Device</div><div class="grid">
-    \${ic("Device Name",dev.name,"vb")}
+    \${ic("Device Name", dev.model&&dev.brand ? dev.brand+" "+dev.model : dev.name, "vb")}
+    \${dev.brand&&dev.model ? ic("Brand / Model", dev.brand+" — "+dev.model, "vg") : ""}
     \${ic("Type",dev.deviceType)}
     \${ic("OS",dev.os)}
     \${ic("Browser",dev.browser+" "+(dev.browserVersion||""))}
